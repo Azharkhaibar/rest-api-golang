@@ -10,10 +10,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// mapping request pake struct
+// Struct untuk mapping request
 type CreateRequest struct {
-	Title       string `json: "title"`
-	Desctiption string `json: "description"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+type AgendaRequest struct {
+	NamaAgenda      string `json:"nama_agenda"`
+	HariPelaksanaan string `json:"hari_pelaksanaan"`
+	NamaPelaksana   string `json:"nama_pelaksana"`
 }
 
 func main() {
@@ -30,7 +36,7 @@ func main() {
 		}
 	}()
 
-	// Cek jika koneksi database hidup
+	// Cek koneksi database
 	err = db.Ping()
 	if err != nil {
 		log.Fatalf("Gagal ping ke database: %v", err)
@@ -39,23 +45,55 @@ func main() {
 	// Inisialisasi Echo web server
 	e := echo.New()
 
-	// Handler POST untuk route /todos_golang
+	// Handler POST untuk route /todos
 	e.POST("/todos", func(ctx echo.Context) error {
-		// parsing json
-		var Request CreateRequest
-		json.NewDecoder(ctx.Request().Body).Decode(&Request)
-		fmt.Println(Request)
+		// Parsing JSON dari request body
+		var request CreateRequest
+		if err := json.NewDecoder(ctx.Request().Body).Decode(&request); err != nil {
+			return ctx.String(http.StatusBadRequest, "Invalid request payload")
+		}
+		fmt.Println("Title:", request.Title, "Description:", request.Description)
 
-		// INSERT QUERY GOLANG
+		// INSERT query ke database
+		_, err := db.Exec(
+			"INSERT INTO todos (title, description) VALUES (?, ?)",
+			request.Title,
+			request.Description,
+		)
 
-		return ctx.String(http.StatusOK, "OK")
+		if err != nil {
+			return ctx.String(http.StatusInternalServerError, err.Error())
+		}
+
+		return ctx.String(http.StatusOK, "Todo created")
 	})
 
-	// Log ketika server dimulai
+	// Handler POST untuk route /agenda
+	e.POST("/agenda", func(ctx echo.Context) error {
+		var requestAgenda AgendaRequest
+		if err := json.NewDecoder(ctx.Request().Body).Decode(&requestAgenda); err != nil {
+			return ctx.String(http.StatusBadRequest, "Invalid request payload")
+		}
+		fmt.Println("NamaAgenda:", requestAgenda.NamaAgenda, "HariPelaksanaan:", requestAgenda.HariPelaksanaan, "NamaPelaksana:", requestAgenda.NamaPelaksana)
+
+		// INSERT query ke database
+		_, err := db.Exec(
+			"INSERT INTO agenda (nama_agenda, hari_pelaksanaan, nama_pelaksana) VALUES (?, ?, ?)",
+			requestAgenda.NamaAgenda,
+			requestAgenda.HariPelaksanaan,
+			requestAgenda.NamaPelaksana,
+		)
+
+		if err != nil {
+			return ctx.String(http.StatusInternalServerError, err.Error())
+		}
+
+		return ctx.String(http.StatusOK, "Agenda created")
+	})
+
+	// Jalankan server di port 8000
 	log.Println("Server dimulai di port 8000")
 	if err := e.Start(":8000"); err != nil {
 		log.Fatalf("Gagal memulai server: %v", err)
 	}
-
-	fmt.Println("Go berhasil dijalankan")
 }
