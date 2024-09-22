@@ -1,0 +1,5 @@
+go mod init github.com/Dryluigi/golang-todos
+
+go get github.com/labstack/echo
+
+go get github.com/go-sql-driver/mysql
