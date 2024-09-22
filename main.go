@@ -22,6 +22,14 @@ type AgendaRequest struct {
 	NamaPelaksana   string `json:"nama_pelaksana"`
 }
 
+type AgendaResponse struct {
+	id              int `json:"id"`
+	namaAgenda      string `json:"nama_agenda"`
+	HariPelaksanaan string `json:"hari_pelaksanaan"`
+	NamaPelaksana   string `json:"nama_pelaksana"`
+	Done            bool `json:"done"`
+}
+
 func main() {
 	// Inisialisasi database dan tangani error yang mungkin terjadi
 	db, err := database.InitDb()
@@ -89,6 +97,42 @@ func main() {
 		}
 
 		return ctx.String(http.StatusOK, "Agenda created")
+	})
+
+	e.GET("/agenda", func(ctx echo.Context) error {
+		dbRows, err := db.Query(
+			"SELECT * FROM agenda")
+		if err != nil {
+			return ctx.String(http.StatusInternalServerError, err.Error())
+		}
+
+		var res []AgendaResponse
+
+		// menggunakan loops unutk cetak rows
+		for dbRows.Next() {
+			var id int
+			var nama_agenda string
+			var hari_pelaksanaan string
+			var nama_pelaksana string
+			var done int
+
+			err := dbRows.Scan(&id, &nama_agenda, &hari_pelaksanaan, &nama_pelaksana, &done)
+			if err != nil {
+				return ctx.String(http.StatusInternalServerError, err.Error())
+			}
+
+			// array response 
+			var Agenda AgendaResponse
+			Agenda.id = id
+			Agenda.namaAgenda = nama_agenda
+			Agenda.HariPelaksanaan = hari_pelaksanaan
+			Agenda.NamaPelaksana = nama_pelaksana
+			if done == 1 {
+				Agenda.Done = true
+			}
+			res = append(res, Agenda)
+		}
+		return ctx.JSON(http.StatusOK, res)
 	})
 
 	// Jalankan server di port 8000
