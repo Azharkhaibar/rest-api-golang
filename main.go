@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"github.com/Dryluigi/golang-todos/controller"
 	"github.com/Dryluigi/golang-todos/database"
 	"github.com/labstack/echo/v4"
 )
@@ -28,13 +28,6 @@ type AgendaUpdate struct {
 	NamaPelaksana   string `json:"nama_pelaksana"`
 }
 
-type AgendaResponse struct {
-	id              int    `json:"id"`
-	namaAgenda      string `json:"nama_agenda"`
-	HariPelaksanaan string `json:"hari_pelaksanaan"`
-	NamaPelaksana   string `json:"nama_pelaksana"`
-	Done            bool   `json:"done"`
-}
 
 func main() {
 	// Inisialisasi database dan tangani error yang mungkin terjadi
@@ -59,7 +52,12 @@ func main() {
 	// Inisialisasi Echo web server
 	e := echo.New()
 
-	// Handler POST untuk route /todos
+	// agenda route
+    controller.NewGetAllAgendaController(e, db)
+	controller.PostAgendaController(e, db)
+	controller.UpdateAgendaByIdController(e, db)
+	controller.DeleteAgendaByIdController(e, db)
+
 	e.POST("/todos", func(ctx echo.Context) error {
 		// Parsing JSON dari request body
 		var request CreateRequest
@@ -80,105 +78,6 @@ func main() {
 		}
 
 		return ctx.String(http.StatusOK, "Todo created")
-	})
-
-	// Handler POST untuk route /agenda
-	e.POST("/agenda", func(ctx echo.Context) error {
-		var requestAgenda AgendaRequest
-		if err := json.NewDecoder(ctx.Request().Body).Decode(&requestAgenda); err != nil {
-			return ctx.String(http.StatusBadRequest, "Invalid request payload")
-		}
-		fmt.Println("NamaAgenda:", requestAgenda.NamaAgenda, "HariPelaksanaan:", requestAgenda.HariPelaksanaan, "NamaPelaksana:", requestAgenda.NamaPelaksana)
-
-		// INSERT query ke database
-		_, err := db.Exec(
-			"INSERT INTO agenda (nama_agenda, hari_pelaksanaan, nama_pelaksana) VALUES (?, ?, ?)",
-			requestAgenda.NamaAgenda,
-			requestAgenda.HariPelaksanaan,
-			requestAgenda.NamaPelaksana,
-		)
-
-		if err != nil {
-			return ctx.String(http.StatusInternalServerError, err.Error())
-		}
-
-		return ctx.String(http.StatusOK, "Agenda created")
-	})
-
-	e.GET("/agenda", func(ctx echo.Context) error {
-		dbRows, err := db.Query(
-			"SELECT * FROM agenda")
-		if err != nil {
-			return ctx.String(http.StatusInternalServerError, err.Error())
-		}
-
-		var res []AgendaResponse
-
-		// menggunakan loops unutk cetak rows
-		for dbRows.Next() {
-			var id int
-			var nama_agenda string
-			var hari_pelaksanaan string
-			var nama_pelaksana string
-			var done int
-
-			err := dbRows.Scan(&id, &nama_agenda, &hari_pelaksanaan, &nama_pelaksana, &done)
-			if err != nil {
-				return ctx.String(http.StatusInternalServerError, err.Error())
-			}
-
-			// array response
-			var Agenda AgendaResponse
-			Agenda.id = id
-			Agenda.namaAgenda = nama_agenda
-			Agenda.HariPelaksanaan = hari_pelaksanaan
-			Agenda.NamaPelaksana = nama_pelaksana
-			if done == 1 {
-				Agenda.Done = true
-			}
-			res = append(res, Agenda)
-		}
-		return ctx.JSON(http.StatusOK, res)
-	})
-
-	// UPDATE
-
-	e.PATCH("/agenda/:id", func(ctx echo.Context) error {
-		id := ctx.Param("id")
-		var UpdateAgenda AgendaUpdate
-		if err := ctx.Bind(&UpdateAgenda); err != nil {
-			return ctx.String(http.StatusBadRequest, "Invalid request body")
-		}
-
-		// INSERT query ke database
-		_, err := db.Exec(
-			"UPDATE agenda SET nama_agenda = ?, hari_pelaksanaan = ?, nama_pelaksana = ? WHERE id = ?",
-			UpdateAgenda.NamaAgenda,
-			UpdateAgenda.HariPelaksanaan,
-			UpdateAgenda.NamaPelaksana,
-			id,
-		)
-
-		if err != nil {
-			return ctx.String(http.StatusInternalServerError, err.Error())
-		}
-
-		return ctx.String(http.StatusOK, "Agenda Updated")
-	})
-
-	e.DELETE("/agenda/:id", func(ctx echo.Context) error {
-		id := ctx.Param("id")
-		// INSERT query ke database
-		_, err := db.Exec(
-			"DELETE FROM agenda where id = ?",
-			id,
-		)
-
-		if err != nil {
-			return ctx.String(http.StatusInternalServerError, err.Error())
-		}
-
-		return ctx.String(http.StatusOK, "Agenda Id Deleted")
 	})
 
 	// Jalankan server di port 8000
