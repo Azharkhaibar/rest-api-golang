@@ -95,7 +95,7 @@ func GetDepartemenByIdController(e *echo.Echo, db *sql.DB) {
 		var Departemens Departemen
 		err := db.QueryRow(
 			"SELECT id, nama_departemen, nama_kepala_departemen, kantor_departemen, total_karyawan, laba_departemen, done FROM departemen WHERE id = ? ", departemenByID).
-			Scan(&Departemens.NamaDepartemen, &Departemens.NamaKepalaDepartemen, &Departemens.KantorDepartemen, &Departemens.TotalKaryawan, &Departemens.LabaDepartemen, &Departemens.Done)
+			Scan(&Departemens.Id, &Departemens.NamaDepartemen, &Departemens.NamaKepalaDepartemen, &Departemens.KantorDepartemen, &Departemens.TotalKaryawan, &Departemens.LabaDepartemen, &Departemens.Done)
         if err != nil {
 			if err == sql.ErrNoRows {
 				return ctx.String(http.StatusNotFound, "Departemen Data Not Found!")
@@ -107,7 +107,7 @@ func GetDepartemenByIdController(e *echo.Echo, db *sql.DB) {
 }
 // UPDATE DEPARTEMEN
 func UpdateDepartemenController(e *echo.Echo, db *sql.DB) {
-	e.PATCH("/departemen", func(ctx echo.Context) error {
+	e.PATCH("/departemen/:id", func(ctx echo.Context) error {
 		DepartemenID := ctx.Param("id")
 		var UpdateDepartemen UpdateDepartemen
 		if err := ctx.Bind(&UpdateDepartemen); err != nil {
@@ -133,11 +133,11 @@ func UpdateDepartemenController(e *echo.Echo, db *sql.DB) {
 // DELETE DEPARTEMEN
 
 func DeleteDepartemenDataController(e *echo.Echo, db *sql.DB) {
-    e.DELETE("/departemen", func(ctx echo.Context) error {
-		departemenID := ctx.Param("id")
+    e.DELETE("/departemen/:id", func(ctx echo.Context) error {
+		DepartemenID := ctx.Param("id")
 		_, err := db.Exec(
 			"DELETE FROM departemen WHERE id = ?",
-			departemenID,
+			DepartemenID,
 		)
 
 		if err != nil {
