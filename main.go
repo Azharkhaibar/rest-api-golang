@@ -50,6 +50,9 @@ func main() {
 
 	// departemen route
 	controller.PostDepartemenController(e, db)
+	controller.GetAllDepartemenController(e, db)
+	controller.GetDepartemenByIdController(e, db)
+	controller.UpdateAgendaByIdController(e, db)
 
 	e.POST("/todos", func(ctx echo.Context) error {
 		// Parsing JSON dari request body
