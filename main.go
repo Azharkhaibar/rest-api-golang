@@ -16,17 +16,6 @@ type CreateRequest struct {
 	Description string `json:"description"`
 }
 
-type AgendaRequest struct {
-	NamaAgenda      string `json:"nama_agenda"`
-	HariPelaksanaan string `json:"hari_pelaksanaan"`
-	NamaPelaksana   string `json:"nama_pelaksana"`
-}
-
-type AgendaUpdate struct {
-	NamaAgenda      string `json:"nama_agenda"`
-	HariPelaksanaan string `json:"hari_pelaksanaan"`
-	NamaPelaksana   string `json:"nama_pelaksana"`
-}
 
 
 func main() {
@@ -54,9 +43,13 @@ func main() {
 
 	// agenda route
     controller.NewGetAllAgendaController(e, db)
+	controller.GetDataAgendaByIdController(e, db)
 	controller.PostAgendaController(e, db)
 	controller.UpdateAgendaByIdController(e, db)
 	controller.DeleteAgendaByIdController(e, db)
+
+	// departemen route
+	controller.PostDepartemenController(e, db)
 
 	e.POST("/todos", func(ctx echo.Context) error {
 		// Parsing JSON dari request body

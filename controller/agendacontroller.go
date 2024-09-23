@@ -9,8 +9,8 @@ import (
 )
 
 type AgendaResponse struct {
-	id              int    `json:"id"`
-	namaAgenda      string `json:"nama_agenda"`
+	Id              int    `json:"id"`
+	NamaAgenda      string `json:"nama_agenda"`
 	HariPelaksanaan string `json:"hari_pelaksanaan"`
 	NamaPelaksana   string `json:"nama_pelaksana"`
 	Done            bool   `json:"done"`
@@ -53,8 +53,8 @@ func NewGetAllAgendaController(e *echo.Echo, db *sql.DB) {
 
 			// array response
 			var Agenda AgendaResponse
-			Agenda.id = id
-			Agenda.namaAgenda = nama_agenda
+			Agenda.Id = id
+			Agenda.NamaAgenda = nama_agenda
 			Agenda.HariPelaksanaan = hari_pelaksanaan
 			Agenda.NamaPelaksana = nama_pelaksana
 			if done == 1 {
@@ -63,6 +63,24 @@ func NewGetAllAgendaController(e *echo.Echo, db *sql.DB) {
 			res = append(res, Agenda)
 		}
 		return ctx.JSON(http.StatusOK, res)
+	})
+}
+
+func GetDataAgendaByIdController(e *echo.Echo, db *sql.DB) {
+	e.GET("/agenda/:id", func(ctx echo.Context) error {
+		agendaID := ctx.Param("id")
+		var agenda AgendaResponse
+		err := db.QueryRow(
+			"SELECT id, nama_agenda, hari_pelaksanaan, nama_pelaksana, done FROM agenda WHERE id = ?", agendaID).
+			Scan(&agenda.Id, &agenda.NamaAgenda, &agenda.HariPelaksanaan, &agenda.NamaPelaksana, &agenda.Done)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return ctx.String(http.StatusNotFound, "Agenda Not Found")
+			}
+			return ctx.String(http.StatusInternalServerError, err.Error())
+		}
+		return ctx.JSON(http.StatusOK, agenda)
 	})
 }
 
