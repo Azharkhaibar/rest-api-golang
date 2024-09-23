@@ -22,12 +22,18 @@ type AgendaRequest struct {
 	NamaPelaksana   string `json:"nama_pelaksana"`
 }
 
+type AgendaUpdate struct {
+	NamaAgenda      string `json:"nama_agenda"`
+	HariPelaksanaan string `json:"hari_pelaksanaan"`
+	NamaPelaksana   string `json:"nama_pelaksana"`
+}
+
 type AgendaResponse struct {
-	id              int `json:"id"`
+	id              int    `json:"id"`
 	namaAgenda      string `json:"nama_agenda"`
 	HariPelaksanaan string `json:"hari_pelaksanaan"`
 	NamaPelaksana   string `json:"nama_pelaksana"`
-	Done            bool `json:"done"`
+	Done            bool   `json:"done"`
 }
 
 func main() {
@@ -121,7 +127,7 @@ func main() {
 				return ctx.String(http.StatusInternalServerError, err.Error())
 			}
 
-			// array response 
+			// array response
 			var Agenda AgendaResponse
 			Agenda.id = id
 			Agenda.namaAgenda = nama_agenda
@@ -135,9 +141,50 @@ func main() {
 		return ctx.JSON(http.StatusOK, res)
 	})
 
+	// UPDATE
+
+	e.PATCH("/agenda/:id", func(ctx echo.Context) error {
+		id := ctx.Param("id")
+		var UpdateAgenda AgendaUpdate
+		if err := ctx.Bind(&UpdateAgenda); err != nil {
+			return ctx.String(http.StatusBadRequest, "Invalid request body")
+		}
+
+		// INSERT query ke database
+		_, err := db.Exec(
+			"UPDATE agenda SET nama_agenda = ?, hari_pelaksanaan = ?, nama_pelaksana = ? WHERE id = ?",
+			UpdateAgenda.NamaAgenda,
+			UpdateAgenda.HariPelaksanaan,
+			UpdateAgenda.NamaPelaksana,
+			id,
+		)
+
+		if err != nil {
+			return ctx.String(http.StatusInternalServerError, err.Error())
+		}
+
+		return ctx.String(http.StatusOK, "Agenda Updated")
+	})
+
+	e.DELETE("/agenda/:id", func(ctx echo.Context) error {
+		id := ctx.Param("id")
+		// INSERT query ke database
+		_, err := db.Exec(
+			"DELETE FROM agenda where id = ?",
+			id,
+		)
+
+		if err != nil {
+			return ctx.String(http.StatusInternalServerError, err.Error())
+		}
+
+		return ctx.String(http.StatusOK, "Agenda Id Deleted")
+	})
+
 	// Jalankan server di port 8000
 	log.Println("Server dimulai di port 8000")
 	if err := e.Start(":8000"); err != nil {
 		log.Fatalf("Gagal memulai server: %v", err)
 	}
+
 }
