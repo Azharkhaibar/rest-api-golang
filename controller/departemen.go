@@ -131,7 +131,6 @@ func UpdateDepartemenController(e *echo.Echo, db *sql.DB) {
 }
 
 // DELETE DEPARTEMEN
-
 func DeleteDepartemenDataController(e *echo.Echo, db *sql.DB) {
     e.DELETE("/departemen/:id", func(ctx echo.Context) error {
 		DepartemenID := ctx.Param("id")
@@ -139,11 +138,9 @@ func DeleteDepartemenDataController(e *echo.Echo, db *sql.DB) {
 			"DELETE FROM departemen WHERE id = ?",
 			DepartemenID,
 		)
-
 		if err != nil {
 			return ctx.String(http.StatusInternalServerError, err.Error())
 		}
-
 		return ctx.String(http.StatusOK, "Departemen ID Deleted")
 	})
 }

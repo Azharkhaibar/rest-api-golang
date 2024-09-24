@@ -55,6 +55,11 @@ func main() {
 	controller.UpdateDepartemenController(e, db)
 	controller.DeleteDepartemenDataController(e, db)
 
+	// data Client
+	controller.PostClientCustomerController(e ,db)
+	controller.GetAllDataClientCustomerController(e, db)
+	controller.GetClientCustomerById(e, db)
+
 	e.POST("/todos", func(ctx echo.Context) error {
 		// Parsing JSON dari request body
 		var request CreateRequest
