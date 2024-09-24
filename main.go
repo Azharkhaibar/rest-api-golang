@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"github.com/Dryluigi/golang-todos/controller"
+	"github.com/Dryluigi/golang-todos/controllers"
 	"github.com/Dryluigi/golang-todos/database"
 	"github.com/labstack/echo/v4"
 )
@@ -59,6 +59,10 @@ func main() {
 	controller.PostClientCustomerController(e ,db)
 	controller.GetAllDataClientCustomerController(e, db)
 	controller.GetClientCustomerById(e, db)
+
+	// pegawai route
+	controller.GetAllPegawaiDataController(e, db)
+    controller.GetPegawaiByIdController(e, db)
 
 	e.POST("/todos", func(ctx echo.Context) error {
 		// Parsing JSON dari request body
