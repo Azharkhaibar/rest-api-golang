@@ -39,3 +39,15 @@ func GetJasaWebDataModels(db *sql.DB, id int) (JasaWeb, error) {
 	}
 	return GetIdJasaWeb, nil
 }
+
+func CreateDataJasaWeb(db *sql.DB, jasaWeb JasaWeb) error {
+	_, err := db.Exec(
+		"INSERT INTO jasaweb (nama_web, kategori_web, harga_web, nama_client, page_web) VALUES (?, ?, ?, ?, ?)",
+		jasaWeb.NamaWeb,
+		jasaWeb.KategoriWeb,
+		jasaWeb.HargaWeb,
+		jasaWeb.NamaClient,
+		jasaWeb.PageWeb,
+	)
+	return err
+}
